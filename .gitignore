@@ -1,0 +1,8 @@
+# Donnees brutes (a telecharger, voir README)
+donnees/
+*.zip
+# Sorties regenerees par les scripts
+resultats/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/

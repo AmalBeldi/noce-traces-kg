@@ -1,0 +1,74 @@
+264935 triplets charges
+
+=== Q1 - Par notion : episodes, part en difficulte, temps actif moyen avant l'alerte
+notion | episodes | pct_difficulte | min_actives_avant_alerte
+notion_listes_2D_recursivite | 23 | 61 | 20
+notion_boucles | 43 | 28 | 84
+notion_recherche_tri | 33 | 27 | 57
+notion_surcharge_operateurs | 32 | 22 | 31
+notion_listes | 30 | 17 | 58
+notion_fonctions | 35 | 14 | 76
+notion_classes_objets | 32 | 9 | 72
+notion_modules | 34 | 3 | 74
+
+=== Q2 - Avoir commence ou non 48 h avant l'echeance, et l'issue
+commence | diff | episodes
+false | false | 72
+false | true | 36
+true | false | 134
+true | true | 20
+
+=== Q3 - Les 3 types d'erreurs les plus frequents par notion
+notion | type | n
+notion_boucles | err_TypeError | 129
+notion_boucles | err_SyntaxError | 60
+notion_boucles | err_NameError | 47
+notion_classes_objets | err_TypeError | 328
+notion_classes_objets | err_AttributeError | 208
+notion_classes_objets | err_NameError | 106
+notion_fonctions | err_TypeError | 521
+notion_fonctions | err_NameError | 135
+notion_fonctions | err_ValueError | 89
+notion_listes | err_TypeError | 423
+notion_listes | err_AttributeError | 300
+notion_listes | err_ValueError | 65
+notion_listes_2D_recursivite | err_IndexError | 183
+notion_listes_2D_recursivite | err_TypeError | 150
+notion_listes_2D_recursivite | err_AttributeError | 64
+notion_modules | err_TypeError | 228
+notion_modules | err_NameError | 60
+notion_modules | err_SyntaxError | 56
+notion_recherche_tri | err_TypeError | 295
+notion_recherche_tri | err_IndexError | 106
+notion_recherche_tri | err_SyntaxError | 104
+notion_surcharge_operateurs | err_TypeError | 679
+notion_surcharge_operateurs | err_AttributeError | 144
+notion_surcharge_operateurs | err_ValueError | 122
+
+=== Q4 - Justification : les executions d'un episode en difficulte, avant l'alerte (Student30_Assign13)
+debut | resultat | type | id
+2021-12-06T15:56:32+00:00 | ok | None | 1062334
+2021-12-06T15:57:10+00:00 | ok | None | 1062381
+2021-12-06T15:57:20+00:00 | ok | None | 1062388
+2021-12-06T15:57:31+00:00 | ok | None | 1062400
+2021-12-06T15:57:39+00:00 | ok | None | 1062408
+2021-12-06T15:58:57+00:00 | ok | None | 1062414
+2021-12-06T15:59:16+00:00 | erreur | err_IndexError | 1062421
+2021-12-06T15:59:35+00:00 | erreur | None | 1062425
+2021-12-06T15:59:42+00:00 | erreur | None | 1062429
+2021-12-06T16:00:06+00:00 | ok | None | 1062443
+2021-12-07T23:16:09+00:00 | ok | None | 1062585
+2021-12-07T23:16:20+00:00 | ok | None | 1062629
+2021-12-07T23:19:08+00:00 | ok | None | 1062643
+2021-12-07T23:19:17+00:00 | ok | None | 1062668
+2021-12-07T23:22:35+00:00 | ok | None | 1062687
+2021-12-07T23:22:48+00:00 | ok | None | 1062729
+2021-12-07T23:22:52+00:00 | ok | None | 1062735
+2021-12-07T23:22:56+00:00 | erreur | None | 1062741
+2021-12-07T23:23:08+00:00 | ok | None | 1062789
+2021-12-07T23:23:12+00:00 | ok | None | 1062791
+2021-12-07T23:23:19+00:00 | ok | None | 1062797
+2021-12-07T23:23:26+00:00 | ok | None | 1062803
+2021-12-07T23:23:32+00:00 | ok | None | 1062828
+2021-12-07T23:23:57+00:00 | ok | None | 1062830
+... (45 lignes au total)

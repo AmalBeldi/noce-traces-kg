@@ -1,0 +1,81 @@
+@prefix lt:   <https://example.org/learning-traces#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# Ontologie des traces de programmation - v0.3 (jeu CS1 Keystroke 2021, Utah State)
+# Trois niveaux : le contexte pedagogique (apprenant, devoir, notion),
+# l'activite (episode, sessions, executions, erreurs) et l'interpretation
+# (indicateurs, regles, activations qui justifient une alerte).
+
+lt: a owl:Ontology ;
+    rdfs:label "Traces de programmation - v0.3"@fr ;
+    owl:versionInfo "0.3" .
+
+# ======================= 1. Contexte pedagogique ==========================
+lt:Apprenant  a owl:Class ; rdfs:label "Apprenant"@fr .
+lt:Devoir     a owl:Class ; rdfs:label "Devoir"@fr ;
+    rdfs:comment "Travail note avec une echeance (Assign6 a Assign13)."@fr .
+lt:Notion     a owl:Class ; rdfs:label "Notion visee"@fr ;
+    rdfs:comment "Concept principal du devoir, issu des objectifs du sujet. A relier a un referentiel (ex. BUT Informatique)."@fr .
+
+lt:mobilise   a owl:ObjectProperty ; rdfs:domain lt:Devoir ; rdfs:range lt:Notion .
+lt:echeance   a owl:DatatypeProperty ; rdfs:domain lt:Devoir ; rdfs:range xsd:dateTime .
+
+# ======================= 2. Activite ======================================
+lt:Episode    a owl:Class ; rdfs:label "Episode"@fr ;
+    rdfs:comment "Travail d'un apprenant sur un devoir."@fr .
+lt:Session    a owl:Class ; rdfs:label "Session de travail"@fr ;
+    rdfs:comment "Suite d'evenements sans pause de plus de 30 min."@fr .
+lt:Execution  a owl:Class ; rdfs:label "Execution du programme"@fr .
+lt:TypeErreur a owl:Class ; rdfs:label "Type d'erreur Python"@fr .
+
+lt:concerne        a owl:ObjectProperty ; rdfs:domain lt:Episode ; rdfs:range lt:Apprenant .
+lt:porteSur        a owl:ObjectProperty ; rdfs:domain lt:Episode ; rdfs:range lt:Devoir .
+lt:aSession        a owl:ObjectProperty ; rdfs:domain lt:Episode ; rdfs:range lt:Session .
+lt:aExecution      a owl:ObjectProperty ; rdfs:domain lt:Session ; rdfs:range lt:Execution .
+lt:suivante        a owl:ObjectProperty ; rdfs:domain lt:Execution ; rdfs:range lt:Execution ;
+    rdfs:comment "Execution suivante du meme episode (ordre temporel)."@fr .
+lt:aPourTypeErreur a owl:ObjectProperty ; rdfs:domain lt:Execution ; rdfs:range lt:TypeErreur .
+
+lt:debut           a owl:DatatypeProperty ; rdfs:range xsd:dateTime .
+lt:fin             a owl:DatatypeProperty ; rdfs:range xsd:dateTime .
+lt:avantAlerte     a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:comment "Vrai si l'element precede le moment de l'alerte (48 h avant l'echeance) : seul ce qui est vrai ici peut servir a predire."@fr .
+lt:resultat        a owl:DatatypeProperty ; rdfs:domain lt:Execution ; rdfs:range xsd:string ;
+    rdfs:comment "ok, erreur, interrompue ou inconnu (d'apres le code de sortie)."@fr .
+lt:codeSortie      a owl:DatatypeProperty ; rdfs:domain lt:Execution ; rdfs:range xsd:string .
+lt:fichier         a owl:DatatypeProperty ; rdfs:domain lt:Execution ; rdfs:range xsd:string .
+lt:idEvenement     a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:comment "EventID ProgSnap2 d'origine : permet de revenir a la trace brute."@fr .
+lt:dureeActiveMin  a owl:DatatypeProperty ; rdfs:domain lt:Session ; rdfs:range xsd:decimal .
+lt:nbEvenements    a owl:DatatypeProperty ; rdfs:domain lt:Session ; rdfs:range xsd:integer .
+
+# ======================= 3. Interpretation ================================
+# Indicateurs calcules a l'etape 2 (sur ce qui precede l'alerte)
+lt:commenceAvantAlerte a owl:DatatypeProperty ; rdfs:domain lt:Episode ; rdfs:range xsd:boolean .
+lt:debutHeuresAvant    a owl:DatatypeProperty ; rdfs:domain lt:Episode ; rdfs:range xsd:decimal .
+lt:nbSessions          a owl:DatatypeProperty ; rdfs:domain lt:Episode ; rdfs:range xsd:integer .
+lt:tempsActifMin       a owl:DatatypeProperty ; rdfs:domain lt:Episode ; rdfs:range xsd:decimal .
+lt:nbExecutions        a owl:DatatypeProperty ; rdfs:domain lt:Episode ; rdfs:range xsd:integer .
+lt:tauxEchecExec       a owl:DatatypeProperty ; rdfs:domain lt:Episode ; rdfs:range xsd:decimal .
+lt:serieErreursMax     a owl:DatatypeProperty ; rdfs:domain lt:Episode ; rdfs:range xsd:integer .
+lt:nbTypesErreur       a owl:DatatypeProperty ; rdfs:domain lt:Episode ; rdfs:range xsd:integer .
+lt:partNonCompilable   a owl:DatatypeProperty ; rdfs:domain lt:Episode ; rdfs:range xsd:decimal .
+lt:nbCollages          a owl:DatatypeProperty ; rdfs:domain lt:Episode ; rdfs:range xsd:integer .
+lt:ratioEffacement     a owl:DatatypeProperty ; rdfs:domain lt:Episode ; rdfs:range xsd:decimal .
+# Issue (connue apres l'echeance seulement)
+lt:note                a owl:DatatypeProperty ; rdfs:domain lt:Episode ; rdfs:range xsd:decimal .
+lt:enDifficulte        a owl:DatatypeProperty ; rdfs:domain lt:Episode ; rdfs:range xsd:boolean .
+
+# Regles et alertes (ajoutees a l'etape 4)
+lt:Regle       a owl:Class ; rdfs:label "Regle interpretable"@fr .
+lt:Activation  a owl:Class ; rdfs:label "Activation d'une regle sur un episode (alerte)"@fr .
+lt:condition   a owl:DatatypeProperty ; rdfs:domain lt:Regle ; rdfs:range xsd:string .
+lt:confiance   a owl:DatatypeProperty ; rdfs:domain lt:Regle ; rdfs:range xsd:decimal .
+lt:support     a owl:DatatypeProperty ; rdfs:domain lt:Regle ; rdfs:range xsd:decimal .
+lt:lift        a owl:DatatypeProperty ; rdfs:domain lt:Regle ; rdfs:range xsd:decimal .
+lt:regle       a owl:ObjectProperty ; rdfs:domain lt:Activation ; rdfs:range lt:Regle .
+lt:surEpisode  a owl:ObjectProperty ; rdfs:domain lt:Activation ; rdfs:range lt:Episode .
+lt:justifiePar a owl:ObjectProperty ; rdfs:domain lt:Activation ;
+    rdfs:comment "Sessions ou executions qui fondent l'alerte (sous-graphe justificatif)."@fr .
