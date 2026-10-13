@@ -60,6 +60,7 @@ Une fois le graphe produit (étapes 1 à 4), une seule commande interroge le gra
 python demo.py                 # Student7, devoir Assign13
 python demo.py --pas-a-pas     # Entrée entre chaque étape, pour une présentation
 python demo.py --lister        # les 66 alertes, justifiées ou non
+python demo.py --seminaire     # les 3 cas du séminaire à la suite (ou double-clic sur demo_seminaire.bat)
 python demo.py --apprenant Student1 --devoir Assign13   # une fausse alerte
 ```
 

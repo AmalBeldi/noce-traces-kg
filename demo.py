@@ -5,6 +5,8 @@ Une seule commande, pour le seminaire :
     python demo.py --pas-a-pas            (Entree entre chaque etape)
     python demo.py --apprenant Student12 --devoir Assign9
     python demo.py --lister               (toutes les alertes du graphe)
+    python demo.py --seminaire            (les 3 cas du seminaire, a la suite)
+    ou double-clic sur demo_seminaire.bat (Windows)
 
 Le script charge resultats/graphe_avec_regles.ttl (produit par les etapes 1 a 4),
 puis tout ce qu'il affiche vient de requetes SPARQL sur ce graphe :
@@ -33,6 +35,15 @@ for flux in (sys.stdout, sys.stderr):
         pass
 if os.name == "nt":
     os.system("")  # active les couleurs ANSI dans les consoles Windows
+
+
+# Les trois cas du seminaire : une alerte justifiee peu active, une alerte justifiee
+# avec beaucoup d'erreurs sur une autre notion, et une fausse alerte.
+CAS_SEMINAIRE = [
+    ("Student7", "Assign13", "Cas 1 sur 3 : peu de travail, sur une notion difficile"),
+    ("Student22", "Assign12", "Cas 2 sur 3 : une autre notion, beaucoup d'erreurs"),
+    ("Student1", "Assign13", "Cas 3 sur 3 : une fausse alerte"),
+]
 
 C = {"titre": "\033[1;34m", "or": "\033[1;33m", "rouge": "\033[1;31m", "vert": "\033[32m",
      "gris": "\033[90m", "gras": "\033[1m", "fin": "\033[0m"}
@@ -64,6 +75,7 @@ def main():
     ap.add_argument("--apprenant", default="Student7")
     ap.add_argument("--devoir", default="Assign13")
     ap.add_argument("--lister", action="store_true", help="lister toutes les alertes et s'arreter")
+    ap.add_argument("--seminaire", action="store_true", help="les 3 cas du seminaire, Entree entre chaque etape")
     ap.add_argument("--pas-a-pas", action="store_true", help="attendre Entree entre les etapes")
     a = ap.parse_args()
 
@@ -96,19 +108,37 @@ def main():
             print(f"  {r['app']:<10} {r['dev']:<9} confiance {float(r['conf']):.0%}  note {float(r['note']):>3.0f}  {verdict}")
         return
 
-    cible = [r for r in top.values() if r["app"] == a.apprenant and r["dev"] == a.devoir]
+    if a.seminaire:
+        for i, (app, dev, titre) in enumerate(CAS_SEMINAIRE):
+            if i:
+                input(coul(f"\n   [Entree pour le cas suivant]", "gris"))
+                print("\n" * 2)
+            print(coul("=" * 60, "or"))
+            print(coul(f"  {titre}", "or"))
+            print(coul("=" * 60, "or"))
+            expliquer(g, top, app, dev, True)
+        input(coul("\n   Fin de la demonstration. [Entree pour fermer]", "gris"))
+        return
+
+    expliquer(g, top, a.apprenant, a.devoir, a.pas_a_pas)
+
+
+def expliquer(g, top, app, dev, pas):
+    """Les 5 etapes de l'explication d'une alerte, toutes tirees du graphe."""
+    cible = [r for r in top.values() if r["app"] == app and r["dev"] == dev]
     if not cible:
-        sys.exit(f"Aucune alerte pour {a.apprenant} sur {a.devoir}. Essayez : python demo.py --lister")
+        print(f"Aucune alerte pour {app} sur {dev}. Essayez : py demo.py --lister")
+        return
     r = cible[0]
     e = r["e"]
 
-    etape(1, "La question posee au graphe (SPARQL)", a.pas_a_pas)
-    print(coul(Q_AFFICHEE % (a.apprenant, a.devoir), "gris"))
+    etape(1, "La question posee au graphe (SPARQL)", pas)
+    print(coul(Q_AFFICHEE % (app, dev), "gris"))
     t1 = time.time()
-    rep = list(g.query(P + Q_AFFICHEE.split("\n", 1)[1] % (a.apprenant, a.devoir)))
+    rep = list(g.query(P + Q_AFFICHEE.split("\n", 1)[1] % (app, dev)))
     print(coul(f"-> {len(rep)} reponses en {time.time() - t1:.2f} s", "gris"))
 
-    etape(2, "L'alerte", a.pas_a_pas)
+    etape(2, "L'alerte", pas)
     print(f"{coul(r['app'], 'gras')}, devoir {coul(r['dev'], 'gras')} (notion : {r['notion']}), "
           f"echeance {r['ech']:%d/%m/%Y %H:%M}")
     print(coul("Alerte 48 h avant l'echeance : risque de note inferieure a 70.", "rouge"))
@@ -116,12 +146,12 @@ def main():
     print(f"Dans les donnees, {float(r['conf']):.0%} des episodes qui verifient cette regle etaient "
           f"en difficulte (taux moyen 21 %, lift {float(r['lift']):.1f}).")
 
-    etape(3, "Pourquoi", a.pas_a_pas)
+    etape(3, "Pourquoi", pas)
     conds = r["cond"].split(" ET ")
     for c in conds:
         print(f"  - {phrase_condition(c, r)}")
 
-    etape(4, "Les preuves, reliees a l'alerte dans le graphe", a.pas_a_pas)
+    etape(4, "Les preuves, reliees a l'alerte dans le graphe", pas)
     sessions = [tuple(natif(v) for v in x) for x in g.query(Q_PREUVES_SESSIONS % e)]
     execs = [tuple(natif(v) for v in x) for x in g.query(Q_PREUVES_EXEC % e)]
     if sessions:
@@ -141,17 +171,18 @@ def main():
         print(coul(f"  {len(execs)} executions, dont {n_err} en erreur. Chaque numero renvoie "
                    "a l'evenement d'origine dans les traces ProgSnap2.", "gris"))
 
-    etape(5, "Action proposee a l'enseignant·e", a.pas_a_pas)
+    etape(5, "Action proposee a l'enseignant·e", pas)
     for c in conds:
         if c in ACTIONS:
             print(f"  - {ACTIONS[c]}")
     print(coul("  L'enseignant·e decide ; la regle et ses preuves peuvent etre contestees.", "gris"))
 
-    if a.pas_a_pas:
+    if pas:
         input(coul("\n   [Entree pour l'evaluation apres coup]", "gris"))
     print("\n" + coul("Evaluation apres coup (jamais utilisee par la regle)", "gris"))
     verdict = "alerte justifiee." if r["diff"] else "fausse alerte : l'etudiant a reussi."
     print(f"  Note obtenue : {float(r['note']):.0f} -> {verdict}")
+
 
 
 if __name__ == "__main__":
