@@ -31,7 +31,7 @@ Le détail se trouve dans [`resultats_exemple/`](resultats_exemple/) : règles, 
 - Jeu de données : https://doi.org/10.7910/DVN/BVOF7S (Harvard Dataverse)
 - Article : Edwards, J., Hart, K., & Shrestha, R. (2023). *Review of CSEDM Data and Introduction of Two Public CS1 Keystroke Datasets*. Journal of Educational Data Mining, 15(1), 1–31.
 
-Les données ne sont pas redistribuées ici. Téléchargez `dataverse_files.zip` depuis Dataverse, puis décompressez `keystrokes.csv`, `students.csv` et `due.csv` dans `donnees/keystroke2021/`. Placez aussi le zip lui-même dans ce dossier : l'étape 1 y lit directement `runs1.csv` et `runs2.csv` (2,4 Go).
+Les données ne sont pas redistribuées ici. Téléchargez `dataverse_files.zip` depuis Dataverse et placez-le, sans le décompresser, dans `donnees/keystroke2021/`. L'étape 1 lit `runs1.csv` et `runs2.csv` (2,4 Go) directement dans le zip et en extrait `keystrokes.csv`, `students.csv` et `due.csv`.
 
 ## Installation
 
@@ -51,6 +51,29 @@ pip install -r requirements.txt
 | 5. Explications et figure | `python etape5_explications.py --resultats resultats` | `explications.md`, `explications.csv`, figure du sous-graphe | ~25 s |
 
 La figure de l'étape 5 demande [Graphviz](https://graphviz.org). Sans lui, le script écrit le fichier `.dot`, que l'on peut visualiser en ligne.
+
+## Démonstration
+
+Une fois le graphe produit (étapes 1 à 4), une seule commande interroge le graphe en SPARQL et explique une alerte :
+
+```bash
+python demo.py                 # Student7, devoir Assign13
+python demo.py --pas-a-pas     # Entrée entre chaque étape, pour une présentation
+python demo.py --lister        # les 66 alertes, justifiées ou non
+python demo.py --apprenant Student1 --devoir Assign13   # une fausse alerte
+```
+
+Sous Windows (PowerShell), depuis le dossier du dépôt :
+
+```powershell
+py -m pip install -r requirements.txt
+mkdir donnees\keystroke2021      # puis y copier dataverse_files.zip
+py etape1_resumer_executions.py runs1.csv runs2.csv --zip donnees\keystroke2021\dataverse_files.zip --sortie donnees\keystroke2021\executions.csv
+py etape2_indicateurs.py --donnees donnees\keystroke2021 --sortie resultats
+py etape3_graphe.py --donnees donnees\keystroke2021 --resultats resultats --notions notions.csv
+py etape4_regles.py --resultats resultats --notions notions.csv
+py demo.py --pas-a-pas
+```
 
 ## Ontologie
 

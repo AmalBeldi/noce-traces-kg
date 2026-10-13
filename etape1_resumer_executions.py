@@ -13,7 +13,8 @@ Sortie : un petit fichier executions.csv (une ligne par execution).
 
 Usage :
     python etape1_resumer_executions.py runs1.csv runs2.csv --sortie executions.csv
-    (on peut aussi lire directement dans le zip : --zip dataverse_files.zip)
+    (on peut aussi lire directement dans le zip : --zip dataverse_files.zip ;
+     keystrokes.csv, students.csv et due.csv sont alors extraits a cote de la sortie)
 """
 import argparse
 import csv
@@ -22,7 +23,7 @@ import re
 import sys
 import zipfile
 
-csv.field_size_limit(sys.maxsize)
+csv.field_size_limit(2**31 - 1)  # sys.maxsize deborde sous Windows
 RE_EXIT = re.compile(r"exit code (-?\d+)")
 # derniere ligne d'une trace Python : "NomErreur: message" ou "NomErreur"
 RE_ERREUR = re.compile(r"^([A-Z][A-Za-z]*(?:Error|Exception|Interrupt|Exit))\b")
@@ -75,4 +76,14 @@ if __name__ == "__main__":
     ap.add_argument("--zip", help="lire directement dans l'archive dataverse_files.zip")
     ap.add_argument("--sortie", default="executions.csv")
     a = ap.parse_args()
+    if a.zip:
+        # extrait aussi les petits fichiers dont les etapes suivantes ont besoin
+        import os
+        dossier = os.path.dirname(os.path.abspath(a.sortie))
+        os.makedirs(dossier, exist_ok=True)
+        with zipfile.ZipFile(a.zip) as z:
+            for nom in ("keystrokes.csv", "students.csv", "due.csv"):
+                if not os.path.exists(os.path.join(dossier, nom)):
+                    z.extract(nom, dossier)
+                    print(f"{nom} extrait dans {dossier}")
     resumer(a.sources, a.zip, a.sortie)
