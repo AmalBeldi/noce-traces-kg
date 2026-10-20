@@ -3,7 +3,7 @@
 Une seule commande, pour le seminaire :
     python demo.py
     python demo.py --pas-a-pas            (Entree entre chaque etape)
-    python demo.py --apprenant Student12 --devoir Assign9
+    python demo.py --apprenant Student22 --devoir Assign12
     python demo.py --lister               (toutes les alertes du graphe)
     python demo.py --seminaire            (les 3 cas du seminaire, a la suite)
     ou double-clic sur demo_seminaire.bat (Windows)
@@ -14,7 +14,7 @@ puis tout ce qu'il affiche vient de requetes SPARQL sur ce graphe :
   2. l'alerte et la regle qui l'a declenchee ;
   3. le pourquoi : les conditions, avec les valeurs observees ;
   4. les preuves : sessions et executions avant l'alerte, avec leurs identifiants d'origine ;
-  5. l'action proposee, puis, a part, la note reelle pour evaluer l'alerte.
+  5. l'action proposee, puis, a part, la note reelle et ce qui s'est passe apres l'alerte.
 """
 import argparse
 import os
@@ -47,6 +47,15 @@ CAS_SEMINAIRE = [
 
 C = {"titre": "\033[1;34m", "or": "\033[1;33m", "rouge": "\033[1;31m", "vert": "\033[32m",
      "gris": "\033[90m", "gras": "\033[1m", "fin": "\033[0m"}
+
+# Ce qui s'est passe apres l'alerte (affiche a part, jamais utilise par les regles)
+Q_APRES = P + """
+SELECT ?debut ?fin ?duree (COUNT(?x) AS ?n) WHERE {
+  <%s> lt:aSession ?s .
+  ?s lt:avantAlerte false ; lt:debut ?debut ; lt:fin ?fin ; lt:dureeActiveMin ?duree .
+  OPTIONAL { ?s lt:aExecution ?x }
+} GROUP BY ?s ?debut ?fin ?duree
+"""
 
 Q_AFFICHEE = """PREFIX lt: <https://example.org/learning-traces#>
 SELECT ?regle ?confiance ?preuve WHERE {
@@ -182,6 +191,16 @@ def expliquer(g, top, app, dev, pas):
     print("\n" + coul("Evaluation apres coup (jamais utilisee par la regle)", "gris"))
     verdict = "alerte justifiee." if r["diff"] else "fausse alerte : l'etudiant a reussi."
     print(f"  Note obtenue : {float(r['note']):.0f} -> {verdict}")
+    apres = [tuple(natif(v) for v in x) for x in g.query(Q_APRES % e)]
+    if apres:
+        minutes = sum(float(m) for _, _, m, _ in apres)
+        n_exec = sum(int(n) for _, _, _, n in apres)
+        fin = max(f for _, f, _, _ in apres)
+        reste = (r["ech"] - fin).total_seconds() / 3600
+        print(f"  Apres l'alerte : {len(apres)} session(s), {minutes:.0f} min actives, {n_exec} execution(s), "
+              f"derniere activite {reste:.1f} h avant l'echeance.")
+    else:
+        print("  Apres l'alerte : aucune activite enregistree.")
 
 
 

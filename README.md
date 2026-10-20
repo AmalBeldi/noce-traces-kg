@@ -76,6 +76,22 @@ py etape4_regles.py --resultats resultats --notions notions.csv
 py demo.py --pas-a-pas
 ```
 
+### Les trois cas du mode séminaire
+
+| 48 h avant l'échéance | Student7 · Assign13 | Student22 · Assign12 | Student1 · Assign13 |
+| --- | --- | --- | --- |
+| Notion | listes 2D et récursivité | recherche et tri | listes 2D et récursivité |
+| Sessions, temps actif | 1, 29,9 min | 1, 35,4 min | 0, 0 min |
+| Exécutions (en erreur) | 27 (3 NameError) | 26 (8 : ValueError, SyntaxError, TypeError) | 0 |
+| Règle la plus forte | notion ET temps actif < 30 min | notion ET une seule session | moins de 10 exécutions ET notion |
+| Confiance, lift | 69 %, 3,2 | 39 %, 1,8 | 69 %, 3,2 |
+| Après l'alerte (non utilisé) | 16 min, 9 exécutions | rien | 113 min, 28 exécutions, dans les 13 dernières heures |
+| Note | 18 : alerte justifiée | 21 : alerte justifiée | 86 : fausse alerte |
+
+Student1 n'a pas travaillé hors de l'outil : il a tout fait dans l'outil, mais après l'alerte. Une alerte unique à 48 h ne peut pas voir ce profil.
+
+**Taux de base.** 56 épisodes sur 262 ont une note inférieure à 70, soit 21 %. La confiance d'une règle se compare à ce taux ; le lift est le rapport des deux (69 % ÷ 21 % ≈ 3,2).
+
 ## Ontologie
 
 [`ontologie/ontologie_v03.ttl`](ontologie/ontologie_v03.ttl) est organisée en trois niveaux :
